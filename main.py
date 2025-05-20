@@ -38,4 +38,5 @@ def home():
         if prompt:
             try:
                 response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo
+                    model="gpt-3.5-turbo"
+
