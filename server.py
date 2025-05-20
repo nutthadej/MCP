@@ -5,7 +5,6 @@ import os
 app = Flask(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
-# HTML หน้าแรก (เขียนตรงในโค้ดเลยก็ได้)
 HTML_FORM = """
 <!DOCTYPE html>
 <html>
@@ -45,5 +44,4 @@ def home():
                 reply = response.choices[0].message["content"]
             except Exception as e:
                 reply = f"เกิดข้อผิดพลาด: {str(e)}"
-
     return render_template_string(HTML_FORM, prompt=prompt, reply=reply)
