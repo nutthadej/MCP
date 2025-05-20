@@ -37,5 +37,8 @@ def home():
                 )
                 reply = response.choices[0].message["content"]
             except Exception as e:
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
+
                 reply = f"❌ Error: {str(e)}"
     return render_template_string(HTML_FORM, prompt=prompt, reply=reply)
