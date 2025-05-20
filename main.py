@@ -71,4 +71,30 @@ HTML_TEMPLATE = """
 
     {% if reply %}
     <div class="reply">
-        <strong>✉️ คำตอบจาก GPT
+        <strong>✉️ คำตอบจาก GPT:</strong><br><br>
+        {{ reply }}
+    </div>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    prompt = ""
+    reply = ""
+    if request.method == "POST":
+        prompt = request.form.get("prompt", "")
+        if prompt:
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                reply = response.choices[0].message.content
+            except Exception as e:
+                reply = f"❌ เกิดข้อผิดพลาด: {str(e)}"
+    return render_template_string(HTML_TEMPLATE, prompt=prompt, reply=reply)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
