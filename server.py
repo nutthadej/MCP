@@ -1,8 +1,10 @@
-from mcp_sdk import McpServer
+from flask import Flask
 
-def get_weather(location: str) -> str:
-    return f"สภาพอากาศที่ {location} คือ แดดออก"
+app = Flask(__name__)
 
-server = McpServer(name="WeatherServer", version="1.0.0")
-server.add_tool(get_weather)
-server.run()
+@app.route("/")
+def home():
+    return "Hello from your custom MCP server on Render!"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
