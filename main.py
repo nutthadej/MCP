@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, render_template_string
 import openai
 import os
 
@@ -8,22 +8,16 @@ openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 HTML_FORM = """
 <!DOCTYPE html>
 <html>
-<head>
-    <title>🧠 AI Prompt Generator</title>
-</head>
-<body style="font-family: sans-serif; margin: 50px;">
-    <h1>🚀 ส่ง Prompt ไปหา GPT</h1>
-    <form method="POST">
-        <label for="prompt">Prompt:</label><br>
-        <textarea name="prompt" rows="4" cols="60" required>{{ prompt }}</textarea><br><br>
-        <button type="submit">ส่งหา GPT</button>
+<head><title>Prompt to GPT</title></head>
+<body>
+    <h1>🚀 ส่ง Prompt ไปยัง GPT</h1>
+    <form method="post">
+        <textarea name="prompt" rows="4" cols="50">{{ prompt }}</textarea><br>
+        <button type="submit">ส่ง</button>
     </form>
-
     {% if reply %}
     <h3>✉️ ตอบกลับ:</h3>
-    <div style="border:1px solid #ccc; padding:10px; max-width:500px;">
-        {{ reply }}
-    </div>
+    <pre>{{ reply }}</pre>
     {% endif %}
 </body>
 </html>
@@ -38,5 +32,10 @@ def home():
         if prompt:
             try:
                 response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo"
-
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                reply = response.choices[0].message["content"]
+            except Exception as e:
+                reply = f"❌ Error: {str(e)}"
+    return render_template_string(HTML_FORM, prompt=prompt, reply=reply)
