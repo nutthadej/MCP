@@ -5,19 +5,71 @@ import os
 app = Flask(__name__)
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
-HTML_FORM = """
+HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html>
-<head><title>Prompt to GPT</title></head>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Prompt Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f2f2f2;
+            padding: 40px;
+            color: #333;
+        }
+        h1 {
+            color: #222;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .reply {
+            background: #fff;
+            padding: 20px;
+            border-left: 5px solid #2d89ef;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
 <body>
-    <h1>🚀 ส่ง Prompt ไปยัง GPT</h1>
+    <h1>🚀 AI Prompt Generator</h1>
     <form method="post">
-        <textarea name="prompt" rows="4" cols="50">{{ prompt }}</textarea><br>
-        <button type="submit">ส่ง</button>
+        <label for="prompt">ใส่ข้อความเพื่อถาม GPT:</label><br><br>
+        <textarea name="prompt" required>{{ prompt }}</textarea><br>
+        <button type="submit">ส่งข้อความ</button>
     </form>
+
     {% if reply %}
-    <h3>✉️ ตอบกลับ:</h3>
-    <pre>{{ reply }}</pre>
+    <div class="reply">
+        <strong>✉️ คำตอบจาก GPT:</strong><br><br>
+        {{ reply }}
+    </div>
     {% endif %}
 </body>
 </html>
@@ -37,8 +89,8 @@ def home():
                 )
                 reply = response.choices[0].message["content"]
             except Exception as e:
+                reply = f"❌ เกิดข้อผิดพลาด: {str(e)}"
+    return render_template_string(HTML_TEMPLATE, prompt=prompt, reply=reply)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
-
-                reply = f"❌ Error: {str(e)}"
-    return render_template_string(HTML_FORM, prompt=prompt, reply=reply)
