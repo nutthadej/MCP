@@ -1,33 +1,49 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 import openai
 import os
-import os
-openai.api_key = os.environ["OPENAI_API_KEY"]
-
 
 app = Flask(__name__)
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
-# ตั้งค่าคีย์ OpenAI (ใส่ตรงนี้หรือใช้ Environment Variable ก็ได้)
-openai.api_key = os.environ.get("OPENAI_API_KEY", "ใส่คีย์ของคุณที่นี่")
+# HTML หน้าแรก (เขียนตรงในโค้ดเลยก็ได้)
+HTML_FORM = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧠 AI Prompt Generator</title>
+</head>
+<body style="font-family: sans-serif; margin: 50px;">
+    <h1>🚀 ส่ง Prompt ไปหา GPT</h1>
+    <form method="POST">
+        <label for="prompt">Prompt:</label><br>
+        <textarea name="prompt" rows="4" cols="50" required>{{ prompt }}</textarea><br><br>
+        <button type="submit">ส่งหา GPT</button>
+    </form>
 
-@app.route("/")
+    {% if reply %}
+    <h3>✉️ ตอบกลับ:</h3>
+    <div style="border:1px solid #ccc; padding:10px; max-width:500px;">
+        {{ reply }}
+    </div>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return "✅ MCP Server + OpenAI is ready!"
+    prompt = ""
+    reply = ""
+    if request.method == "POST":
+        prompt = request.form.get("prompt", "")
+        if prompt:
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                reply = response.choices[0].message["content"]
+            except Exception as e:
+                reply = f"เกิดข้อผิดพลาด: {str(e)}"
 
-@app.route("/ask", methods=["POST"])
-def ask():
-    data = request.json
-    user_prompt = data.get("prompt", "")
-
-    if not user_prompt:
-        return jsonify({"error": "No prompt provided"}), 400
-
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # หรือ gpt-4 ถ้าคุณมีสิทธิ์ใช้งาน
-            messages=[{"role": "user", "content": user_prompt}]
-        )
-        answer = response.choices[0].message["content"]
-        return jsonify({"reply": answer})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return render_template_string(HTML_FORM, prompt=prompt, reply=reply)
